@@ -1,0 +1,65 @@
+VAGRANTFILE_API_VERSION = "2"
+
+IMAGE_NAME = "ubuntu/jammy64"
+
+MASTER_IP = "10.0.0.11"
+WORKER_NODE_COUNT = 1 # Number of worker VMs to create
+WORKER_IP_START = "10.0.0." # first worker IP is 10.0.0.21
+
+MASTER_MEM = 2048
+MASTER_CPUS = 2
+WORKER_MEM = 2048
+WORKER_CPUS = 1
+
+POD_CIDR = "10.244.0.0/16"
+
+# Specify the box to use
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = IMAGE_NAME
+
+  # Disable automatic SSH key insertion by Vagrant
+  config.ssh.insert_key = false
+
+  config.vm.define "master" do |master|
+    master.vm.hostname = "master-node"
+    master.vm.network "private_network", ip: MASTER_IP
+    master.vm.provider "virtualbox" do |vb|
+      vb.name = "master"
+      vb.cpus = MASTER_CPUS
+      vb.memory = MASTER_MEM
+    end
+
+    master.vm.provision "shell", path: "scripts/common.sh"
+    
+    master.vm.provision "shell",
+      env: {
+        "MASTER_IP" => MASTER_IP,
+        "POD_CIDR" => POD_CIDR
+      },
+      path: "scripts/master.sh"
+  end
+
+  (1..WORKER_NODE_COUNT).each do |i|
+    config.vm.define "worker-#{i}" do |worker|
+      worker.vm.hostname = "worker-#{i}"
+      worker.vm.network "private_network", ip: WORKER_IP_START + "#{20+i}"
+      worker.vm.provider "virtualbox" do |vb|
+        vb.name = "worker-#{i}"
+        vb.cpus = WORKER_CPUS
+        vb.memory = WORKER_MEM
+      end
+
+      worker.vm.provision "shell", path: "scripts/common.sh"
+      worker.vm.provision "shell", path: "scripts/worker.sh"
+    end
+  end
+
+  # Provisioner to copy public key during provisioning
+  config.vm.provision "shell" do |s|
+    ssh_pub_key = File.readlines("./id_rsa.pub").first.strip
+    s.inline = <<-SHELL
+      echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+      echo #{ssh_pub_key} >> /root/.ssh/authorized_keys
+    SHELL
+  end
+end
