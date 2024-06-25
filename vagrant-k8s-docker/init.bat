@@ -25,8 +25,8 @@ if "%1%" EQU "create" (
 ) else (
   echo Usage:
   echo.
-  echo  create    : Creates vagrant VMs from scratch.
-  echo  start    : To boot up VMs from shutdown state
+  echo  create   : When running project for the first time
+  echo  start    : To create vagrant VMs from scratch or boot up VMs from shutdown state
   echo  resume   : Wake up all VMs from sleep state
   echo  sleep    : Pause all running VMs
   echo  shutdown : Shuts down all running VMs

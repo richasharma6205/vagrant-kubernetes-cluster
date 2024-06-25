@@ -11,8 +11,8 @@ Vagrant project to setup a Kubernetes cluster using docker as the container runt
 
 #### 2. Useful commands
 This project contains an init.bat file that accepts the below arguments:
-1. `create`   : To create vagrant VMs from scratch
-2. `start`    : To boot up VMs from shutdown state
+1. `create`   : When running project for the first time
+2. `start`    : To create vagrant VMs from scratch or boot up VMs from shutdown state
 3. `resume`   : Wake up all VMs from sleep state
 4. `sleep`    : Pause all running VMs
 5. `shutdown` : Shuts down all running VMs
